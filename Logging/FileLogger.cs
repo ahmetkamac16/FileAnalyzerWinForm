@@ -9,10 +9,15 @@ namespace FileAnalyzerWinForm.Logging
 
         public FileLogger()
         {
-            string logDirectory = ResolveLogDirectory();
+            string logDirectory = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "Logs"
+            );
+
             Directory.CreateDirectory(logDirectory);
 
-            string fileName = $"log_{DateTime.Now.ToString("yyyy-MM-dd")}.txt";
+            string fileName = $"log_{DateTime.Now:yyyy-MM-dd}.txt";
+
             _logFilePath = Path.Combine(logDirectory, fileName);
         }
 
