@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using FileAnalyzerWinForm.Readers;
 using FileAnalyzerWinForm.Analysis;
 using FileAnalyzerWinForm.Models;
+using System.Threading.Tasks;
 
 namespace FileAnalyzerWinForm
 {
@@ -29,7 +30,7 @@ namespace FileAnalyzerWinForm
             btnUpload.Enabled = cmbFileType.SelectedIndex >= 0;    
         }
 
-        private void btnUpload_Click(object sender, EventArgs e)
+        private async void btnUpload_Click(object sender, EventArgs e)
         {
             if (cmbFileType.SelectedItem == null)
             {
@@ -55,20 +56,35 @@ namespace FileAnalyzerWinForm
                 {
                     string filePath = openFileDialog.FileName;
 
-                    IFileReader reader = _fileReaderFactory.GetReader(filePath);
+                    btnUpload.Enabled = false;
+                    cmbFileType.Enabled = false;
+                    progressBarAnalysis.Visible = true;
 
-                    string text = reader.ReadText(filePath);
-
-                    AnalysisResult result = new AnalysisResult
+                    AnalysisResult result = await Task.Run(() =>
                     {
-                        FilePath = filePath
-                    };
+                        IFileReader reader =
+                            _fileReaderFactory.GetReader(filePath);
 
-                    TextAnalyzer textAnalyzer = new TextAnalyzer();
-                    textAnalyzer.Analyze(text, result);
+                        string text = reader.ReadText(filePath);
 
-                    PunctuationAnalyzer punctuationAnalyzer = new PunctuationAnalyzer();
-                    punctuationAnalyzer.Analyze(text, result);
+                        AnalysisResult analysisResult = new AnalysisResult
+                        {
+                            FilePath = filePath
+                        };
+
+                        TextAnalyzer textAnalyzer = new TextAnalyzer();
+                        textAnalyzer.Analyze(text, analysisResult);
+
+                        PunctuationAnalyzer punctuationAnalyzer =
+                            new PunctuationAnalyzer();
+
+                        punctuationAnalyzer.Analyze(text, analysisResult);
+
+                        return analysisResult;
+                    });
+
+                    btnUpload.Enabled = true;
+                    cmbFileType.Enabled = true;
 
                     lblUniqueWordCount.Text =
                         $"Unique Words: {result.DistinctWordCount}";

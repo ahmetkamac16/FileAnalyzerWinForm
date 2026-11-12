@@ -31,7 +31,7 @@
             this.lblFileType = new System.Windows.Forms.Label();
             this.cmbFileType = new System.Windows.Forms.ComboBox();
             this.btnUpload = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.progressBarAnalysis = new System.Windows.Forms.ProgressBar();
             this.lblUniqueWordCount = new System.Windows.Forms.Label();
             this.dgvRepeatedWords = new System.Windows.Forms.DataGridView();
             this.dgvPunctuation = new System.Windows.Forms.DataGridView();
@@ -71,14 +71,15 @@
             this.btnUpload.UseVisualStyleBackColor = true;
             this.btnUpload.Click += new System.EventHandler(this.btnUpload_Click);
             // 
-            // progressBar1
+            // progressBarAnalysis
             // 
-            this.progressBar1.Location = new System.Drawing.Point(41, 81);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(969, 23);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar1.TabIndex = 3;
-            this.progressBar1.Visible = false;
+            this.progressBarAnalysis.Location = new System.Drawing.Point(41, 81);
+            this.progressBarAnalysis.MarqueeAnimationSpeed = 30;
+            this.progressBarAnalysis.Name = "progressBarAnalysis";
+            this.progressBarAnalysis.Size = new System.Drawing.Size(969, 23);
+            this.progressBarAnalysis.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBarAnalysis.TabIndex = 3;
+            this.progressBarAnalysis.Visible = false;
             // 
             // lblUniqueWordCount
             // 
@@ -120,7 +121,7 @@
             this.Controls.Add(this.dgvPunctuation);
             this.Controls.Add(this.dgvRepeatedWords);
             this.Controls.Add(this.lblUniqueWordCount);
-            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.progressBarAnalysis);
             this.Controls.Add(this.btnUpload);
             this.Controls.Add(this.cmbFileType);
             this.Controls.Add(this.lblFileType);
@@ -140,7 +141,7 @@
         private System.Windows.Forms.Label lblFileType;
         private System.Windows.Forms.ComboBox cmbFileType;
         private System.Windows.Forms.Button btnUpload;
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ProgressBar progressBarAnalysis;
         private System.Windows.Forms.Label lblUniqueWordCount;
         private System.Windows.Forms.DataGridView dgvRepeatedWords;
         private System.Windows.Forms.DataGridView dgvPunctuation;
