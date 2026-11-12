@@ -10,7 +10,3 @@
 # NuGet packages
 packages/
 *.nupkg
-
-# Application logs
-Logs/*
-!Logs/.gitkeep
