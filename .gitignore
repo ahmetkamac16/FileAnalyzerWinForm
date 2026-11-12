@@ -12,4 +12,5 @@ packages/
 *.nupkg
 
 # Application logs
-Logs/
+Logs/*
+!Logs/.gitkeep

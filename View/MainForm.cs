@@ -117,9 +117,13 @@ namespace FileAnalyzerWinForm.View
                             Count = pair.Value
                         })
                         .ToList();
+
+                    _logger.Info($"File successfully analyzed: {filePath}");
                 }
                 catch (Exception ex)
                 {
+                    _logger.Error($"File analysis failed: {filePath}", ex);
+
                     MessageBox.Show(
                         "An error occurred while analyzing the file:\n"
                         + ex.Message,
