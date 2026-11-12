@@ -1,4 +1,4 @@
-﻿namespace FileAnalyzerWinForm.Readers
+﻿namespace FileAnalyzerWinForm.Services
 {
     public interface IFileReader
     {

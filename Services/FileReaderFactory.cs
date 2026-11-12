@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using FileAnalyzerWinForm.Exceptions;
 
-namespace FileAnalyzerWinForm.Readers
+namespace FileAnalyzerWinForm.Services
 {
     public class FileReaderFactory
     {

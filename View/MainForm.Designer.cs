@@ -1,4 +1,4 @@
-﻿namespace FileAnalyzerWinForm
+﻿namespace FileAnalyzerWinForm.View
 {
     partial class MainForm
     {

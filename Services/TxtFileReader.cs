@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace FileAnalyzerWinForm.Readers
+namespace FileAnalyzerWinForm.Services
 {
     public class TxtFileReader : IFileReader
     {

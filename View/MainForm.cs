@@ -1,14 +1,13 @@
-﻿
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using FileAnalyzerWinForm.Readers;
+using FileAnalyzerWinForm.Services;
 using FileAnalyzerWinForm.Analysis;
 using FileAnalyzerWinForm.Models;
 using FileAnalyzerWinForm.Logging;
 
-namespace FileAnalyzerWinForm
+namespace FileAnalyzerWinForm.View
 {
     public partial class MainForm : Form
     {
