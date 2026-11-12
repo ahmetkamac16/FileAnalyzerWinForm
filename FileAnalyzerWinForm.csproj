@@ -65,6 +65,9 @@
     <Compile Include="Readers\FileReaderFactory.cs" />
     <Compile Include="Readers\IFileReader.cs" />
     <Compile Include="Readers\TxtFileReader.cs" />
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
