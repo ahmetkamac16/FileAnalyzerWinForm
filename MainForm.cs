@@ -1,16 +1,22 @@
-﻿using System;
+﻿
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileAnalyzerWinForm.Readers;
 using FileAnalyzerWinForm.Analysis;
 using FileAnalyzerWinForm.Models;
-using System.Threading.Tasks;
+using FileAnalyzerWinForm.Logging;
 
 namespace FileAnalyzerWinForm
 {
     public partial class MainForm : Form
     {
-        private readonly FileReaderFactory _fileReaderFactory = new FileReaderFactory();
+        private readonly FileReaderFactory _fileReaderFactory =
+            new FileReaderFactory();
+
+        private readonly ILogger _logger = new FileLogger();
+
         public MainForm()
         {
             InitializeComponent();
@@ -18,16 +24,18 @@ namespace FileAnalyzerWinForm
             cmbFileType.Items.AddRange(
                 _fileReaderFactory.SupportedExtensions.ToArray()
             );
+
+            btnUpload.Enabled = false;
+            progressBarAnalysis.Visible = false;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
         }
 
         private void cmbFileType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            btnUpload.Enabled = cmbFileType.SelectedIndex >= 0;    
+            btnUpload.Enabled = cmbFileType.SelectedIndex >= 0;
         }
 
         private async void btnUpload_Click(object sender, EventArgs e)
@@ -40,6 +48,7 @@ namespace FileAnalyzerWinForm
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
+
                 return;
             }
 
@@ -52,14 +61,19 @@ namespace FileAnalyzerWinForm
                     $"Selected Files (*{selectedExtension})|*{selectedExtension}";
                 openFileDialog.Multiselect = false;
 
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                if (openFileDialog.ShowDialog() != DialogResult.OK)
                 {
-                    string filePath = openFileDialog.FileName;
+                    return;
+                }
 
-                    btnUpload.Enabled = false;
-                    cmbFileType.Enabled = false;
-                    progressBarAnalysis.Visible = true;
+                string filePath = openFileDialog.FileName;
 
+                btnUpload.Enabled = false;
+                cmbFileType.Enabled = false;
+                progressBarAnalysis.Visible = true;
+
+                try
+                { 
                     AnalysisResult result = await Task.Run(() =>
                     {
                         IFileReader reader =
@@ -83,9 +97,6 @@ namespace FileAnalyzerWinForm
                         return analysisResult;
                     });
 
-                    btnUpload.Enabled = true;
-                    cmbFileType.Enabled = true;
-
                     lblUniqueWordCount.Text =
                         $"Unique Words: {result.DistinctWordCount}";
 
@@ -103,10 +114,26 @@ namespace FileAnalyzerWinForm
                         .OrderByDescending(pair => pair.Value)
                         .Select(pair => new
                         {
-                            Symbol = pair.Key,
+                            Symbol = pair.Key.ToString(),
                             Count = pair.Value
                         })
                         .ToList();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        "An error occurred while analyzing the file:\n"
+                        + ex.Message,
+                        "Analysis Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+                finally
+                {
+                    progressBarAnalysis.Visible = false;
+                    cmbFileType.Enabled = true;
+                    btnUpload.Enabled = cmbFileType.SelectedIndex >= 0;
                 }
             }
         }
