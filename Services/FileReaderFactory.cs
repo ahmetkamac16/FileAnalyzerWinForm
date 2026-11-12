@@ -11,6 +11,7 @@ namespace FileAnalyzerWinForm.Services
         private readonly List<IFileReader> _readers = new List<IFileReader>
         {
             new TxtFileReader(),
+            new DocxFileReader(),
         };
 
         public IEnumerable<string> SupportedExtensions =>
