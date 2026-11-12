@@ -12,6 +12,7 @@ namespace FileAnalyzerWinForm.Services
         {
             new TxtFileReader(),
             new DocxFileReader(),
+            new PdfFileReader()
         };
 
         public IEnumerable<string> SupportedExtensions =>
