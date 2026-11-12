@@ -125,8 +125,8 @@ namespace FileAnalyzerWinForm.View
                     _logger.Error($"File analysis failed: {filePath}", ex);
 
                     MessageBox.Show(
-                        "An error occurred while analyzing the file:\n"
-                        + ex.Message,
+                        "The selected file could not be analyzed.\n" +
+                        "Please make sure the file is valid and try again.",
                         "Analysis Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
