@@ -49,6 +49,8 @@
     <Compile Include="Analysis\PunctuationAnalyzer.cs" />
     <Compile Include="Analysis\StopWords.cs" />
     <Compile Include="Analysis\TextAnalyzer.cs" />
+    <Compile Include="Exceptions\FileReadException.cs" />
+    <Compile Include="Exceptions\UnsupportedFileTypeException.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -81,7 +83,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Exceptions\" />
     <Folder Include="Logging\" />
     <Folder Include="Readers\" />
   </ItemGroup>
