@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using FileAnalyzerWinForm.Authentication;
+using FileAnalyzerWinForm.View;
+using System;
 using System.Windows.Forms;
 
 namespace FileAnalyzerWinForm
@@ -16,7 +15,15 @@ namespace FileAnalyzerWinForm
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FileAnalyzerWinForm.View.LoginForm());
+            IUserRepository repository = new TxtUserRepository();
+            PasswordHasher passwordHasher = new PasswordHasher();
+
+            AuthService authService = new AuthService(
+                repository,
+                passwordHasher
+            );
+
+            Application.Run(new LoginForm(authService));
         }
     }
 }
