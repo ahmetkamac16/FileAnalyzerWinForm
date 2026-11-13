@@ -91,5 +91,35 @@ namespace FileAnalyzerWinForm.View
             pnlLogin.Visible = true;
             pnlLogin.BringToFront();
         }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            string username = txtUsername.Text;
+            string password = txtPassword.Text;
+
+            AuthResult result = _authService.Login(username, password);
+
+            if (!result.Success)
+            {
+                MessageBox.Show(
+                    result.Message,
+                    "Login Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            MessageBox.Show(
+                result.Message,
+                "Login Successful",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            txtPassword.Clear();
+
+        }
     }
 }
