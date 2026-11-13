@@ -108,7 +108,9 @@
     <Compile Include="Analysis\PunctuationAnalyzer.cs" />
     <Compile Include="Analysis\StopWords.cs" />
     <Compile Include="Analysis\TextAnalyzer.cs" />
+    <Compile Include="Authentication\AuthService.cs" />
     <Compile Include="Authentication\IUserRepository.cs" />
+    <Compile Include="Authentication\PasswordHasher.cs" />
     <Compile Include="Authentication\TxtUserRepository.cs" />
     <Compile Include="Exceptions\FileReadException.cs" />
     <Compile Include="Exceptions\UnsupportedFileTypeException.cs" />
