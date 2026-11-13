@@ -111,14 +111,16 @@ namespace FileAnalyzerWinForm.View
                 return;
             }
 
-            MessageBox.Show(
-                result.Message,
-                "Login Successful",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
-
             txtPassword.Clear();
+
+            this.Hide();
+
+            using (MainForm mainForm = new MainForm())
+            {
+                mainForm.ShowDialog();
+            }
+
+            this.Close();
 
         }
     }
