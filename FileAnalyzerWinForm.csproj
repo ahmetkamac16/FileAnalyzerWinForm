@@ -121,6 +121,12 @@
     <Compile Include="Services\DocxFileReader.cs" />
     <Compile Include="Services\PdfFileReader.cs" />
     <Compile Include="Services\XlsxFileReader.cs" />
+    <Compile Include="View\LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,6 +139,9 @@
     <Compile Include="Services\FileReaderFactory.cs" />
     <Compile Include="Services\IFileReader.cs" />
     <Compile Include="Services\TxtFileReader.cs" />
+    <EmbeddedResource Include="View\LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

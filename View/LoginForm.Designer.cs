@@ -170,6 +170,7 @@
             this.lnkRegister.TabIndex = 15;
             this.lnkRegister.TabStop = true;
             this.lnkRegister.Text = "Create Account";
+            this.lnkRegister.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkRegister_LinkClicked);
             // 
             // pnlLogin
             // 
@@ -283,6 +284,7 @@
             this.lnkBackToLogin.TabIndex = 23;
             this.lnkBackToLogin.TabStop = true;
             this.lnkBackToLogin.Text = "Back to Sign In";
+            this.lnkBackToLogin.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkBackToLogin_LinkClicked);
             // 
             // lblRegisterUsername
             // 
