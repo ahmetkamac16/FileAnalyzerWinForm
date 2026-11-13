@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.IO;
 using FileAnalyzerWinForm.Models;
 
@@ -74,34 +75,34 @@ namespace FileAnalyzerWinForm.Authentication
                 user.HashIterations <= 0)
             {
                 throw new ArgumentException("Invalid user data.");
-
-                string username = user.Username.Trim();
-
-                if (username.Contains("|") ||
-                    username.Contains("\r") ||
-                    username.Contains("\n"))
-                {
-                    throw new ArgumentException("Invalid username format.");
-                }
-
-                if (GetByUsername(username) != null)
-                {
-                    throw new InvalidOperationException(
-                        "Username already exists.");
-                }
-
-                string line = string.Join("|",
-                    username,
-                    user.HashIterations,
-                    user.Salt,
-                    user.PasswordHash
-                );
-
-                File.AppendAllText(
-                    _filePath,
-                    line + Environment.NewLine
-                );
             }
+
+            string username = user.Username.Trim();
+
+            if (username.Contains("|") ||
+                username.Contains("\r") ||
+                username.Contains("\n"))
+            {
+                throw new ArgumentException("Invalid username format.");
+            }
+
+            if (GetByUsername(username) != null)
+            {
+                throw new InvalidOperationException(
+                    "Username already exists.");
+            }
+
+            string line = string.Join("|",
+                username,
+                user.HashIterations,
+                user.Salt,
+                user.PasswordHash
+            );
+
+            File.AppendAllText(
+                _filePath,
+                line + Environment.NewLine
+            );
         }
     }
 }
