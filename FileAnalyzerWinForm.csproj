@@ -108,10 +108,14 @@
     <Compile Include="Analysis\PunctuationAnalyzer.cs" />
     <Compile Include="Analysis\StopWords.cs" />
     <Compile Include="Analysis\TextAnalyzer.cs" />
+    <Compile Include="Authentication\IUserRepository.cs" />
+    <Compile Include="Authentication\TxtUserRepository.cs" />
     <Compile Include="Exceptions\FileReadException.cs" />
     <Compile Include="Exceptions\UnsupportedFileTypeException.cs" />
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Models\AuthResult.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Services\DocxFileReader.cs" />
     <Compile Include="Services\PdfFileReader.cs" />
     <Compile Include="Services\XlsxFileReader.cs" />
