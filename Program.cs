@@ -2,6 +2,7 @@
 using FileAnalyzerWinForm.View;
 using System;
 using System.Windows.Forms;
+using FileAnalyzerWinForm.Logging;
 
 namespace FileAnalyzerWinForm
 {
@@ -17,10 +18,12 @@ namespace FileAnalyzerWinForm
             Application.SetCompatibleTextRenderingDefault(false);
             IUserRepository repository = new TxtUserRepository();
             PasswordHasher passwordHasher = new PasswordHasher();
+            ILogger logger = new FileLogger();
 
             AuthService authService = new AuthService(
                 repository,
-                passwordHasher
+                passwordHasher,
+                logger
             );
 
             Application.Run(new LoginForm(authService));

@@ -1,5 +1,6 @@
 ﻿using System;
 using FileAnalyzerWinForm.Models;
+using FileAnalyzerWinForm.Logging;
 
 namespace FileAnalyzerWinForm.Authentication
 {
@@ -7,16 +8,21 @@ namespace FileAnalyzerWinForm.Authentication
     {
         private readonly IUserRepository _userRepository;
         private readonly PasswordHasher _passwordHasher;
+        private readonly ILogger _logger;
 
         public AuthService(
             IUserRepository userRepository,
-            PasswordHasher passwordHasher)
+            PasswordHasher passwordHasher,
+            ILogger logger)
         {
             _userRepository = userRepository
                 ?? throw new ArgumentNullException(nameof(userRepository));
 
             _passwordHasher = passwordHasher
                 ?? throw new ArgumentNullException(nameof(passwordHasher));
+
+            _logger = logger
+                ?? throw new ArgumentNullException(nameof(logger));
         }
 
 
@@ -105,16 +111,30 @@ namespace FileAnalyzerWinForm.Authentication
                     Message = "Username already exists."
                 };
             }
-            catch (System.IO.IOException)
+            catch (System.IO.InvalidDataException ex)
             {
+                _logger.Error("Authentication user records are corrupted.", ex);
+
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "User records are corrupted. Please contact support."
+                };
+            }
+            catch (System.IO.IOException ex)
+            {
+                _logger.Error("Authentication file access failed.", ex);
+
                 return new AuthResult
                 {
                     Success = false,
                     Message = "Unable to access user records."
                 };
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                _logger.Error("Authentication file access was denied.", ex);
+
                 return new AuthResult
                 {
                     Success = false,
@@ -181,16 +201,30 @@ namespace FileAnalyzerWinForm.Authentication
                     Message = "Login successful."
                 };
             }
-            catch (System.IO.IOException)
+            catch (System.IO.InvalidDataException ex)
             {
+                _logger.Error("Authentication user records are corrupted.", ex);
+
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "User records are corrupted. Please contact support."
+                };
+            }
+            catch (System.IO.IOException ex)
+            {
+                _logger.Error("Authentication file access failed.", ex);
+
                 return new AuthResult
                 {
                     Success = false,
                     Message = "Unable to access user records."
                 };
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                _logger.Error("Authentication file access was denied.", ex);
+
                 return new AuthResult
                 {
                     Success = false,
@@ -198,7 +232,5 @@ namespace FileAnalyzerWinForm.Authentication
                 };
             }
         }
-
-
     }
 }
