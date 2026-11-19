@@ -164,11 +164,9 @@ namespace FileAnalyzerWinForm.Authentication
                 };
             }
 
-            username = username.Trim();
-
             try
             {
-                User user = _userRepository.GetByUsername(username);
+                User user = _userRepository.GetByUsername(username.Trim());
 
                 if (user == null)
                 {
