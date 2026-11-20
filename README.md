@@ -40,8 +40,11 @@ Each reader implements the `IFileReader` interface. `FileReaderFactory` selects 
 - File-type selection, an **Upload** button that becomes available after selection, and a file picker.
 - **`async/await` and `Task.Run`** for analysis, with a ProgressBar indicating activity.
 - User-friendly errors for corrupt or unreadable files.
+- Centralized exception handling: the whole project uses a single `try/catch`, located in `ExceptionHandler`.
+- Library-specific errors from the file readers are wrapped in `FileReadException`, so they share one consistent message.
 - `INFO` entries for successful file analysis, and `ERROR` entries for analysis and authentication system failures.
-- Technical exception details are kept in log files rather than displayed directly to users.
+- Technical exception details, including the original cause (inner exception), are kept in log files rather than displayed directly to users.
+- System exception messages are always logged in English, whatever the Windows display language.
 
 > **Note:** The reference README mentions **listing user accounts** and **exporting results to Excel**. These are **not implemented features** in the current project. `.xlsx` support means **reading Excel files**, not exporting results.
 
@@ -56,7 +59,7 @@ The solution separates responsibilities across the following components:
 | **Models** | `User`, `AuthResult`, and `AnalysisResult` data models. |
 | **Services** | The `IFileReader` contract, `FileReaderFactory`, and file-format-specific readers. |
 | **Logging** | The `ILogger` abstraction and `FileLogger` implementation. |
-| **Exceptions** | Custom exceptions for file-processing scenarios. |
+| **Exceptions** | `ExceptionHandler` (the single, project-wide `try/catch`) and custom exceptions for file-processing scenarios. |
 | **View** | The `LoginForm` and `MainForm` user interfaces. |
 | **Program.cs** | Application entry point and dependency wiring (*Composition Root*). |
 
@@ -76,6 +79,8 @@ Program.cs → LoginForm → AuthService
 ```
 
 `AuthService` depends on the `IUserRepository` abstraction rather than a specific storage implementation, and uses `ILogger` for logging. This supports **Dependency Injection**, a **Repository-based design**, the **Factory Pattern**, and **Separation of Concerns**.
+
+Exception handling is centralized in `ExceptionHandler`. Each layer passes its work and its own `onError` callback to the handler, so the *catching* mechanism is shared while each layer still decides what an error *means*: `AuthService` maps errors to an `AuthResult`, `MainForm` logs them and shows a message, `PasswordHasher` returns `false`, and `FileLogger` ignores write failures so logging never crashes the application.
 
 ## Technologies
 
@@ -154,6 +159,7 @@ FileAnalyzerWinForm/
 │   ├── PasswordHasher.cs
 │   └── TxtUserRepository.cs
 ├── Exceptions/
+│   ├── ExceptionHandler.cs
 │   ├── FileReadException.cs
 │   └── UnsupportedFileTypeException.cs
 ├── Logging/

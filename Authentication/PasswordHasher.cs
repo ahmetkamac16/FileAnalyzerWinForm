@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
+using FileAnalyzerWinForm.Exceptions;
 
 namespace FileAnalyzerWinForm.Authentication
 {
@@ -53,15 +54,10 @@ namespace FileAnalyzerWinForm.Authentication
                 return false;
             }
 
-            byte[] saltBytes;
-            byte[] storedHash;
+            byte[] saltBytes = ExceptionHandler.Execute(() => Convert.FromBase64String(salt), _ => null);
+            byte[] storedHash = ExceptionHandler.Execute(() => Convert.FromBase64String(passwordHash), _ => null);
 
-            try
-            {
-                saltBytes = Convert.FromBase64String(salt);
-                storedHash = Convert.FromBase64String(passwordHash);
-            }
-            catch (FormatException)
+            if (saltBytes == null || storedHash == null)
             {
                 return false;
             }

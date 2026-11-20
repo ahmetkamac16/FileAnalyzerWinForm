@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-
+using FileAnalyzerWinForm.Exceptions;
 namespace FileAnalyzerWinForm.Logging
 {
     public class FileLogger : ILogger
@@ -28,33 +28,14 @@ namespace FileAnalyzerWinForm.Logging
 
         public void Error(string message, Exception exception)
         {
-            Write("ERROR", $"{message} | {exception.GetType().Name}: {exception.Message}");
-        }
+            string detail = $"{exception.GetType().Name}: {exception.Message}";
 
-        private static string ResolveLogDirectory()
-        {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-            try
+            if (exception.InnerException != null)
             {
-                var directory = new DirectoryInfo(baseDirectory);
-
-                while (directory != null)
-                {
-                    if (directory.GetFiles("*.csproj").Length > 0)
-                    {
-                        return Path.Combine(directory.FullName, "Logs");
-                    }
-
-                    directory = directory.Parent;
-                }
-            }
-            catch
-            {
-                // If the folder tree cannot be searched, fall back to the executable's folder.
+                detail += $" --> {exception.InnerException.GetType().Name}: {exception.InnerException.Message}";
             }
 
-            return Path.Combine(baseDirectory, "Logs");
+            Write("ERROR", $"{message} | {detail}");
         }
 
         private void Write(string level, string message)
@@ -62,15 +43,12 @@ namespace FileAnalyzerWinForm.Logging
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string line = $"[{timestamp}] [{level}] {message}";
 
-            try
+            ExceptionHandler.Execute(() =>
             {
                 File.AppendAllText(_logFilePath, line + Environment.NewLine);
-            }
-            catch
-            {
-                // Logging must never crash the application.
-                // If the log file cannot be written (disk full, no permission), the error is ignored.
-            }
+                return true;
+            },
+            _ => false);
         }
     }
 }

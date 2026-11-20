@@ -112,6 +112,7 @@
     <Compile Include="Authentication\IUserRepository.cs" />
     <Compile Include="Authentication\PasswordHasher.cs" />
     <Compile Include="Authentication\TxtUserRepository.cs" />
+    <Compile Include="Exceptions\ExceptionHandler.cs" />
     <Compile Include="Exceptions\FileReadException.cs" />
     <Compile Include="Exceptions\UnsupportedFileTypeException.cs" />
     <Compile Include="Logging\FileLogger.cs" />

@@ -1,6 +1,9 @@
 ﻿using System;
-using FileAnalyzerWinForm.Models;
+using System.IO;
+using System.Text.RegularExpressions;
+using FileAnalyzerWinForm.Exceptions;
 using FileAnalyzerWinForm.Logging;
+using FileAnalyzerWinForm.Models;
 
 namespace FileAnalyzerWinForm.Authentication
 {
@@ -28,207 +31,145 @@ namespace FileAnalyzerWinForm.Authentication
 
         public AuthResult Register(string username, string password)
         {
+            AuthResult validation = ValidateRegistration(username, password);
+
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            return ExceptionHandler.Execute(
+                () => RegisterCore(username.Trim(), password),
+                HandleError,
+                IsAuthError);
+        }
+
+        public AuthResult Login(string username, string password)
+        {
+            AuthResult validation = ValidateCredentials(username, password);
+
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            return ExceptionHandler.Execute(
+                () => LoginCore(username.Trim(), password),
+                HandleError,
+                IsAuthError);
+        }
+
+        private AuthResult RegisterCore(string username, string password)
+        {
+            if (_userRepository.GetByUsername(username) != null)
+            {
+                return AuthResult.Fail("Username already exists.");
+            }
+
+            _passwordHasher.HashPassword(
+                password,
+                out string passwordHash,
+                out string salt,
+                out int iterations
+            );
+
+            _userRepository.Add(new User
+            {
+                Username = username,
+                PasswordHash = passwordHash,
+                Salt = salt,
+                HashIterations = iterations
+            });
+
+            return AuthResult.Ok("Account created successfully.");
+        }
+
+        private AuthResult LoginCore(string username, string password)
+        {
+            User user = _userRepository.GetByUsername(username);
+
+            if (user == null ||
+                !_passwordHasher.VerifyPassword(
+                    password,
+                    user.PasswordHash,
+                    user.Salt,
+                    user.HashIterations))
+            {
+                return AuthResult.Fail("Invalid username or password.");
+            }
+
+            return AuthResult.Ok("Login successful.");
+        }
+
+        private static AuthResult ValidateCredentials(string username, string password)
+        {
             if (string.IsNullOrWhiteSpace(username))
             {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Username is required."
-                };
+                return AuthResult.Fail("Username is required.");
             }
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Password is required."
-                };
+                return AuthResult.Fail("Password is required.");
+            }
+
+            return null;
+        }
+
+        private static AuthResult ValidateRegistration(string username, string password)
+        {
+            AuthResult result = ValidateCredentials(username, password);
+
+            if (result != null)
+            {
+                return result;
             }
 
             if (password.Length < 8)
             {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Password must be at least 8 characters."
-                };
+                return AuthResult.Fail("Password must be at least 8 characters.");
             }
 
-            username = username.Trim();
+            string trimmed = username.Trim();
 
-            if (username.Length < 3 ||
-                username.Length > 30 ||
-                !System.Text.RegularExpressions.Regex.IsMatch(
-                    username, @"^[a-zA-Z0-9_]+$"))
+            if (trimmed.Length < 3 ||
+                trimmed.Length > 30 ||
+                !Regex.IsMatch(trimmed, @"^[a-zA-Z0-9_]+$"))
             {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Username must be 3-30 characters and contain only letters, numbers or underscores."
-                };
+                return AuthResult.Fail(
+                    "Username must be 3-30 characters and contain only letters, numbers or underscores.");
             }
 
-            try
+            return null;
+        }
+
+        private AuthResult HandleError(Exception ex)
+        {
+            switch (ex)
             {
-                if (_userRepository.GetByUsername(username) != null)
-                {
-                    return new AuthResult
-                    {
-                        Success = false,
-                        Message = "Username already exists."
-                    };
-                }
+                case InvalidOperationException _:
+                    return AuthResult.Fail("Username already exists.");
 
-                _passwordHasher.HashPassword(
-                    password,
-                    out string passwordHash,
-                    out string salt,
-                    out int iterations
-                );
+                case InvalidDataException _:
+                    _logger.Error("Authentication user records are corrupted.", ex);
+                    return AuthResult.Fail("User records are corrupted. Please contact support.");
 
-                var user = new User
-                {
-                    Username = username,
-                    PasswordHash = passwordHash,
-                    Salt = salt,
-                    HashIterations = iterations
-                };
+                case UnauthorizedAccessException _:
+                    _logger.Error("Authentication file access was denied.", ex);
+                    return AuthResult.Fail("Unable to access user records.");
 
-                _userRepository.Add(user);
-
-                return new AuthResult
-                {
-                    Success = true,
-                    Message = "Account created successfully."
-                };
-            }
-            catch (InvalidOperationException)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Username already exists."
-                };
-            }
-            catch (System.IO.InvalidDataException ex)
-            {
-                _logger.Error("Authentication user records are corrupted.", ex);
-
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "User records are corrupted. Please contact support."
-                };
-            }
-            catch (System.IO.IOException ex)
-            {
-                _logger.Error("Authentication file access failed.", ex);
-
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Unable to access user records."
-                };
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.Error("Authentication file access was denied.", ex);
-
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Unable to access user records."
-                };
+                default:
+                    _logger.Error("Authentication file access failed.", ex);
+                    return AuthResult.Fail("Unable to access user records.");
             }
         }
 
-
-        public AuthResult Login(string username, string password)
+        private static bool IsAuthError(Exception ex)
         {
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Username is required."
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Password is required."
-                };
-            }
-
-            try
-            {
-                User user = _userRepository.GetByUsername(username.Trim());
-
-                if (user == null)
-                {
-                    return new AuthResult
-                    {
-                        Success = false,
-                        Message = "Invalid username or password."
-                    };
-                }
-
-                bool isValid = _passwordHasher.VerifyPassword(
-                    password,
-                    user.PasswordHash,
-                    user.Salt,
-                    user.HashIterations
-                );
-
-                if (!isValid)
-                {
-                    return new AuthResult
-                    {
-                        Success = false,
-                        Message = "Invalid username or password."
-                    };
-                }
-
-                return new AuthResult
-                {
-                    Success = true,
-                    Message = "Login successful."
-                };
-            }
-            catch (System.IO.InvalidDataException ex)
-            {
-                _logger.Error("Authentication user records are corrupted.", ex);
-
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "User records are corrupted. Please contact support."
-                };
-            }
-            catch (System.IO.IOException ex)
-            {
-                _logger.Error("Authentication file access failed.", ex);
-
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Unable to access user records."
-                };
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.Error("Authentication file access was denied.", ex);
-
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Unable to access user records."
-                };
-            }
+            return ex is InvalidOperationException
+                || ex is InvalidDataException
+                || ex is IOException
+                || ex is UnauthorizedAccessException;
         }
     }
 }

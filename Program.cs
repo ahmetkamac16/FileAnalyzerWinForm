@@ -3,17 +3,16 @@ using FileAnalyzerWinForm.View;
 using System;
 using System.Windows.Forms;
 using FileAnalyzerWinForm.Logging;
+using System.Globalization;
 
 namespace FileAnalyzerWinForm
 {
     internal static class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;   
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             IUserRepository repository = new TxtUserRepository();
