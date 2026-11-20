@@ -31,74 +31,60 @@ namespace FileAnalyzerWinForm.Authentication
 
         public AuthResult Register(string username, string password)
         {
-            AuthResult validation = ValidateRegistration(username, password);
+            return ValidateRegistration(username, password)
+                ?? ExceptionHandler.Execute(() =>
+                {
+                    string name = username.Trim();
 
-            if (validation != null)
-            {
-                return validation;
-            }
+                    if (_userRepository.GetByUsername(name) != null)
+                    {
+                        return AuthResult.Fail("Username already exists.");
+                    }
 
-            return ExceptionHandler.Execute(
-                () => RegisterCore(username.Trim(), password),
+                    _passwordHasher.HashPassword(
+                        password,
+                        out string passwordHash,
+                        out string salt,
+                        out int iterations
+                    );
+
+                    _userRepository.Add(new User
+                    {
+                        Username = name,
+                        PasswordHash = passwordHash,
+                        Salt = salt,
+                        HashIterations = iterations
+                    });
+
+                    return AuthResult.Ok("Account created successfully.");
+                },
                 HandleError,
                 IsAuthError);
         }
 
         public AuthResult Login(string username, string password)
         {
-            AuthResult validation = ValidateCredentials(username, password);
+            return ValidateCredentials(username, password)
+                ?? ExceptionHandler.Execute(() =>
+                {
+                    string name = username.Trim();
 
-            if (validation != null)
-            {
-                return validation;
-            }
+                    User user = _userRepository.GetByUsername(name);
 
-            return ExceptionHandler.Execute(
-                () => LoginCore(username.Trim(), password),
+                    if (user == null ||
+                        !_passwordHasher.VerifyPassword(
+                            password,
+                            user.PasswordHash,
+                            user.Salt,
+                            user.HashIterations))
+                    {
+                        return AuthResult.Fail("Invalid username or password.");
+                    }
+
+                    return AuthResult.Ok("Login successful.");
+                },
                 HandleError,
                 IsAuthError);
-        }
-
-        private AuthResult RegisterCore(string username, string password)
-        {
-            if (_userRepository.GetByUsername(username) != null)
-            {
-                return AuthResult.Fail("Username already exists.");
-            }
-
-            _passwordHasher.HashPassword(
-                password,
-                out string passwordHash,
-                out string salt,
-                out int iterations
-            );
-
-            _userRepository.Add(new User
-            {
-                Username = username,
-                PasswordHash = passwordHash,
-                Salt = salt,
-                HashIterations = iterations
-            });
-
-            return AuthResult.Ok("Account created successfully.");
-        }
-
-        private AuthResult LoginCore(string username, string password)
-        {
-            User user = _userRepository.GetByUsername(username);
-
-            if (user == null ||
-                !_passwordHasher.VerifyPassword(
-                    password,
-                    user.PasswordHash,
-                    user.Salt,
-                    user.HashIterations))
-            {
-                return AuthResult.Fail("Invalid username or password.");
-            }
-
-            return AuthResult.Ok("Login successful.");
         }
 
         private static AuthResult ValidateCredentials(string username, string password)
