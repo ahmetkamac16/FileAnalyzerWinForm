@@ -2,7 +2,7 @@
 
 **FileAnalyzerWinForm** is a modular **Windows Forms** desktop application built with C# and **.NET Framework 4.8**. It extracts text from different file formats and performs word-frequency and punctuation analysis.
 
-The application includes user registration and sign-in, asynchronous analysis, exception handling, and file-based logging. Its `IFileReader` and `FileReaderFactory` design allows additional file readers to be introduced without rewriting the analysis logic.
+The application includes user registration and sign-in, asynchronous analysis, JSON export of analysis results, exception handling, and file-based logging.
 
 ## Features
 
@@ -25,6 +25,7 @@ Each reader implements the `IFileReader` interface. `FileReaderFactory` selects 
 
 ### Word analysis
 
+- Counts **total words** (excluding numbers and stop words).
 - Counts **distinct words**.
 - Lists **repeated words**, their frequencies, and sorts them in descending order.
 - Normalizes letter case.
@@ -39,6 +40,7 @@ Each reader implements the `IFileReader` interface. `FileReaderFactory` selects 
 
 - File-type selection, an **Upload** button that becomes available after selection, and a file picker.
 - **`async/await` and `Task.Run`** for analysis, with a ProgressBar indicating activity.
+- An **Export JSON** button, enabled after a successful analysis, that saves the results (file name and path, export time, total and distinct word counts, repeated words, and punctuation counts) as a `.json` file.
 - User-friendly errors for corrupt or unreadable files.
 - Centralized exception handling: the whole project uses a single `try/catch`, located in `ExceptionHandler`.
 - Library-specific errors from the file readers are wrapped in `FileReadException`, so they share one consistent message.
@@ -46,7 +48,7 @@ Each reader implements the `IFileReader` interface. `FileReaderFactory` selects 
 - Technical exception details, including the original cause (inner exception), are kept in log files rather than displayed directly to users.
 - System exception messages are always logged in English, whatever the Windows display language.
 
-> **Note:** The reference README mentions **listing user accounts** and **exporting results to Excel**. These are **not implemented features** in the current project. `.xlsx` support means **reading Excel files**, not exporting results.
+> **Note:** The reference README mentions **listing user accounts** and **exporting results to Excel**. These are **not implemented features** in the current project. `.xlsx` support means **reading Excel files**, not exporting results; analysis results can currently be exported as **JSON** only.
 
 ## Architecture
 
@@ -57,8 +59,7 @@ The solution separates responsibilities across the following components:
 | **Analysis** | `TextAnalyzer`, `PunctuationAnalyzer`, and `StopWords` for text analysis. |
 | **Authentication** | `AuthService` for registration/sign-in rules; `PasswordHasher` for password handling; `IUserRepository` and `TxtUserRepository` for user persistence. |
 | **Models** | `User`, `AuthResult`, and `AnalysisResult` data models. |
-| **Services** | The `IFileReader` contract, `FileReaderFactory`, and file-format-specific readers. |
-| **Logging** | The `ILogger` abstraction and `FileLogger` implementation. |
+| **Services** | The `IFileReader` contract, `FileReaderFactory`, and file-format-specific readers; the `IResultExporter` contract and `JsonResultExporter` for exporting results. || **Logging** | The `ILogger` abstraction and `FileLogger` implementation. |
 | **Exceptions** | `ExceptionHandler` (the single, project-wide `try/catch`) and custom exceptions for file-processing scenarios. |
 | **View** | The `LoginForm` and `MainForm` user interfaces. |
 | **Program.cs** | Application entry point and dependency wiring (*Composition Root*). |
@@ -76,6 +77,8 @@ Program.cs → LoginForm → AuthService
                                TextAnalyzer / PunctuationAnalyzer
                                              ↓
                                         AnalysisResult
+                                        ↓ Export JSON
+                               IResultExporter → JsonResultExporter → .json
 ```
 
 `AuthService` depends on the `IUserRepository` abstraction rather than a specific storage implementation, and uses `ILogger` for logging. This supports **Dependency Injection**, a **Repository-based design**, the **Factory Pattern**, and **Separation of Concerns**.
@@ -97,6 +100,7 @@ Exception handling is centralized in `ExceptionHandler`. Each layer passes its w
 - [DocumentFormat.OpenXml (Open XML SDK)](https://www.nuget.org/packages/DocumentFormat.OpenXml) — DOCX documents
 - [PdfPig](https://www.nuget.org/packages/PdfPig) — PDF documents
 - [ClosedXML](https://www.nuget.org/packages/ClosedXML) — XLSX workbooks
+- [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) — JSON export of analysis results
 
 > Refer to the project's `.csproj` / NuGet references for exact package versions and the DOCX reader's installed dependency.
 
@@ -123,7 +127,8 @@ Exception handling is centralized in `ExceptionHandler`. Each layer passes its w
 2. Use **Sign In** to authenticate with an existing account.
 3. In `MainForm`, select a supported format (`.txt`, `.docx`, `.pdf`, or `.xlsx`).
 4. Click **Upload** and choose a file.
-5. Review distinct-word counts, repeated-word frequencies, and punctuation statistics.
+5. Review total and distinct word counts, repeated-word frequencies, and punctuation statistics.
+6. Optionally, click **Export JSON** to save the results as a `.json` file.
 
 ## User data and logs
 
@@ -173,6 +178,8 @@ FileAnalyzerWinForm/
 │   ├── DocxFileReader.cs
 │   ├── FileReaderFactory.cs
 │   ├── IFileReader.cs
+│   ├── IResultExporter.cs
+│   ├── JsonResultExporter.cs
 │   ├── PdfFileReader.cs
 │   ├── TxtFileReader.cs
 │   └── XlsxFileReader.cs
@@ -189,10 +196,3 @@ FileAnalyzerWinForm/
 ```
 
 > `bin/` and `obj/` are generated build folders and are intentionally omitted from the source tree above.
-
-## Limitations and potential improvements
-
-- Scanned/image-only PDF documents require **OCR**, which is not included; PDF text extraction depends on the document structure.
-- The XLSX reader analyzes text cells; numeric cells are excluded.
-- **Exporting results to Excel**, **listing users**, and centralized database integration are not included in the current release.
-- Possible next steps include CSV/JSON/Excel export, broader automated tests, Logout, and a database-backed user repository.
