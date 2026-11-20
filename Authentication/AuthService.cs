@@ -67,9 +67,7 @@ namespace FileAnalyzerWinForm.Authentication
             return ValidateCredentials(username, password)
                 ?? ExceptionHandler.Execute(() =>
                 {
-                    string name = username.Trim();
-
-                    User user = _userRepository.GetByUsername(name);
+                    User user = _userRepository.GetByUsername(username.Trim());
 
                     if (user == null ||
                         !_passwordHasher.VerifyPassword(
