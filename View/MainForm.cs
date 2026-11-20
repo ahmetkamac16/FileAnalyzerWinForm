@@ -7,6 +7,7 @@ using FileAnalyzerWinForm.Analysis;
 using FileAnalyzerWinForm.Exceptions;
 using FileAnalyzerWinForm.Models;
 using FileAnalyzerWinForm.Logging;
+using System.IO;
 
 namespace FileAnalyzerWinForm.View
 {
@@ -16,6 +17,9 @@ namespace FileAnalyzerWinForm.View
             new FileReaderFactory();
 
         private readonly ILogger _logger = new FileLogger();
+
+        private readonly IResultExporter _resultExporter = new JsonResultExporter();
+        private AnalysisResult _lastResult;
 
         public MainForm()
         {
@@ -67,7 +71,7 @@ namespace FileAnalyzerWinForm.View
                 }
 
                 string filePath = openFileDialog.FileName;
-
+                _lastResult = null;
                 SetBusy(true);
 
                 await ExceptionHandler.ExecuteAsync(async () =>
@@ -75,6 +79,7 @@ namespace FileAnalyzerWinForm.View
                     AnalysisResult result = await Task.Run(() => AnalyzeFile(filePath));
 
                     DisplayResult(result);
+                    _lastResult = result;
 
                     _logger.Info($"File successfully analyzed: {filePath}");
                     return true;
@@ -146,6 +151,61 @@ namespace FileAnalyzerWinForm.View
             progressBarAnalysis.Visible = busy;
             cmbFileType.Enabled = !busy;
             btnUpload.Enabled = !busy && cmbFileType.SelectedIndex >= 0;
+            btnExportJson.Enabled = !busy && _lastResult != null;
+        }
+
+        private void btnExportJson_Click(object sender, EventArgs e)
+        {
+            if (_lastResult == null)
+            {
+                return;
+            }
+
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Title = "Export analysis results";
+                saveFileDialog.Filter =
+                    $"JSON Files (*{_resultExporter.FileExtension})|*{_resultExporter.FileExtension}";
+                saveFileDialog.FileName =
+                    Path.GetFileNameWithoutExtension(_lastResult.FilePath) + "_analysis" + _resultExporter.FileExtension;
+
+                if (saveFileDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                string exportPath = saveFileDialog.FileName;
+
+                ExceptionHandler.Execute(() =>
+                {
+                    _resultExporter.Export(_lastResult, exportPath);
+
+                    _logger.Info($"Analysis results exported: {exportPath}");
+
+                    MessageBox.Show(
+                        "The analysis results were exported successfully.",
+                        "Export Successful",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+
+                    return true;
+                },
+                ex =>
+                {
+                    _logger.Error($"Analysis result export failed: {exportPath}", ex);
+
+                    MessageBox.Show(
+                        "The analysis results could not be exported.\n" +
+                        "Please check the selected location and try again.",
+                        "Export Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+
+                    return false;
+                });
+            }
         }
     }
 }
