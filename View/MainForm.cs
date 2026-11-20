@@ -126,6 +126,9 @@ namespace FileAnalyzerWinForm.View
             lblUniqueWordCount.Text =
                 $"Unique Words: {result.DistinctWordCount}";
 
+            lblTotalWordCount.Text =
+                $"Total Words: {result.TotalWordCount}";
+
             dgvRepeatedWords.DataSource = result.WordFrequencies
                 .Where(pair => pair.Value > 1)
                 .OrderByDescending(pair => pair.Value)
