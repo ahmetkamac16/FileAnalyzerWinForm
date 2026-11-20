@@ -9,7 +9,7 @@ The application includes user registration and sign-in, asynchronous analysis, J
 ### User management
 
 - **Sign In** and **Create Account** panels within the same form.
-- Validation for required fields, password length, and duplicate usernames.
+- Validation for required fields, password length (at least 8 characters), username format (3–30 letters, digits or underscores), and duplicate usernames.
 - Password storage using **PBKDF2-HMAC-SHA256** with a random salt and iteration count, rather than plaintext passwords.
 - Persistent user records in `users.txt`, without requiring a database server.
 - Navigation to the file analysis window (`MainForm`) after a successful sign-in.
@@ -147,7 +147,7 @@ bin/Debug/
 - These folders and files are created by the application when necessary.
 - **Release mode** uses `bin/Release/`. The `.gitignore` excludes `bin/`, so actual user records and logs are not committed to GitHub.
 - Successful sign-ins and registrations do not generate separate `INFO` entries.
-
+- `users.txt` should not be edited manually; a malformed or empty line causes sign-in and registration to fail with a "User records are corrupted" message.
 > **Security limitation:** The TXT-based local user repository is intended for learning and demonstrations. Because a local user can alter the file, this is not a substitute for server-side authentication in production systems.
 
 ## Project structure
