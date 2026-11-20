@@ -123,6 +123,7 @@
     <Compile Include="Models\AuthResult.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Services\DocxFileReader.cs" />
+    <Compile Include="Services\IResultExporter.cs" />
     <Compile Include="Services\PdfFileReader.cs" />
     <Compile Include="Services\XlsxFileReader.cs" />
     <Compile Include="View\LoginForm.cs">
